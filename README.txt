@@ -3,7 +3,7 @@ Simple photo gallery script v1.2
 
 Usage:
 - adjust the settings in config.php
-- copy the photos into the folder 'photo' (jpegs only)
+- create a new folder 'photo' and copy all photos you want to include in the gallery into that folder (jpegs only)
 - upload the files to a webserver
 
 Note: You should resize your image before uploading them to avoid long loading times.
