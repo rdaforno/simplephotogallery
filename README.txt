@@ -1,4 +1,4 @@
-Simple photo gallery script v1.2
+Simple photo gallery script v1.3
 (c) 2019 Reto Da Forno
 
 Usage:
@@ -6,8 +6,8 @@ Usage:
 - create a new folder 'photo' and copy all photos you want to include in the gallery into that folder (jpegs only)
 - upload the files to a webserver
 
-Note: You should resize your image before uploading them to avoid long loading times.
-      Recommended image width: <= 2000px, jpeg compression: 80-90%
+Note: You should resize your photos before uploading them to avoid long loading times.
+      Recommended photo width: <= 2000px, jpeg compression: 80-90%
 
 Upon the first access to this page, a photo database (text files) and thumbnails will
 be generated. To recreate the database, simply delete the files 'itemlist' and 
