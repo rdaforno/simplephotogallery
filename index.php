@@ -283,7 +283,9 @@
         history: false,
         focus: false,
         index: idx,
-        showAnimationDuration: 500
+        showAnimationDuration: 1000,
+        hideAnimationDuration: 500,
+        showHideOpacity: true
       };      
       var gallery = new PhotoSwipe( pswpElement, PhotoSwipeUI_Default, items, options);
       gallery.init();
