@@ -1,4 +1,4 @@
-Simple photo gallery script v1.3
+Simple photo gallery script v1.4
 (c) 2019 Reto Da Forno
 
 Usage:

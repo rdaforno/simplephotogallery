@@ -1,6 +1,6 @@
 <?php  
   // --------------------------------------------------------------------------------------
-  // Simple photo gallery script v1.3
+  // Simple photo gallery script v1.4
   // (c) 2019 Reto Da Forno
   // --------------------------------------------------------------------------------------
 
@@ -10,6 +10,13 @@
   //error_reporting(E_ALL);
   //ini_set('display_errors', 1);
   ini_set('exif.encode_unicode', 'UTF-8');
+  
+  $photodir = "photo";
+  $thumbsdir = "thumbs";
+  $itemlistfn = "itemlist";
+  $thumblistfn = "thumblist";
+  $counterfn = "counter";
+  $ipaddrfn = 'ipaddr';
   
   // login required?
   if($password != "") {
@@ -26,8 +33,25 @@
               </style>
               <div id=loginform><center><br /><br /><form action=index.php method=post><input type=password name=key placeholder=password /> <input type=submit value=login /></form></center></div>";
         exit();
-      }   
+      }
     }
+    // if password is used: rename the photo directory and adjust filenames
+    $newphotodir = $photodir."_".$_SESSION['key'];
+    if(is_dir($photodir)) {
+      rename($photodir, $newphotodir);
+    }
+    $photodir = $newphotodir;
+    $thumbsdir .= "_".$_SESSION['key'];
+    $itemlistfn .= "_".$_SESSION['key'];
+    $thumblistfn .= "_".$_SESSION['key'];
+    $counterfn .= "_".$_SESSION['key'];
+    $ipaddrfn .= "_".$_SESSION['key'];
+  }
+  
+  // check if the photo folder exists
+  if(!is_dir($photodir)) {
+    echo "photo folder not found!";
+    exit();    
   }
   
   // used to create the thumbnails
@@ -49,10 +73,6 @@
   }
   
   function incrementCounter($dlCounter) {
-    $counterfn = "counter";
-    if($randomize_filenames) {
-      $counterfn = "counter_".sha1("counter".$_SESSION['key']);
-    }
     $filecontent = file_get_contents($counterfn);
     $counter = explode(",", $filecontent);
     if(count($counter) == 1) {
@@ -67,22 +87,16 @@
     return $counter[0];
   }
   
-  // check if the photo folder exists
-  if(!is_dir("photo")) {
-    echo "folder 'photo' not found!";
-    exit();    
-  }
-  
   // to download all photos as a zip file
   if($download_filename != "" && isset($_GET['q']) && $_GET['q'] == 'dl') {
     $zipname = $download_filename;
     $zip = new ZipArchive;
     if(!file_exists($zipname)) {
       if($zip->open($zipname, ZipArchive::CREATE) === true) {
-        if($handle = opendir("photo")) {
+        if($handle = opendir($photodir)) {
           while(false !== ($entry = readdir($handle))) {
             if($entry != "." && $entry != "..") { // && !strstr($entry,'.php')) {
-              $zip->addFile("photo/".$entry);
+              $zip->addFile("$photodir/".$entry);
             }
           }
           closedir($handle);
@@ -103,38 +117,31 @@
     incrementCounter(true);           // update stats
     exit();
   }
-  
-  $itemlistfn = "itemlist";
-  $thumblistfn = "thumblist";
-  if($randomize_filenames) {
-    $itemlistfn = "itemlist_".sha1("itemlist".$_SESSION['key']);
-    $thumblistfn = "thumblist_".sha1("thumblist".$_SESSION['key']);
-  }
    
   // check if thumbs exist, if not -> create thumbnails
-  if(!is_dir("thumbs")) {
-    mkdir("thumbs");
+  if(!is_dir($thumbsdir)) {
+    mkdir($thumbsdir);
     unlink($itemlistfn);
     unlink($thumblistfn);
-    $handle = opendir("photo");
+    $handle = opendir($photodir);
     while(false !== ($filename = readdir($handle))) {
       if($filename != "." && $filename != "..") {
         // filename randomization required?
         if($randomize_filenames && (strlen($filename) != 44)) {   // to avoid rehashing (sha1 generates 40 chars)
           $newfilename = sha1($filename.mt_rand());
-          rename("photo/$filename", "photo/$newfilename.jpg");
+          rename("$photodir/$filename", "$photodir/$newfilename.jpg");
           echo "file ".$filename." renamed to ".$newfilename.".jpg<br />";
           $filename = $newfilename.".jpg";
         }
         $image = new SimpleJPEG();
-        $image->load("photo/$filename");
-        // scale short side to 200px
+        $image->load("$photodir/$filename");
+        // scale short side to $thumbsize
         if($image->orientationLandscape()) {
-          $image->resizeToHeight(200);
+          $image->resizeToHeight($thumbsize);
         } else {
-          $image->resizeToWidth(200); 
+          $image->resizeToWidth($thumbsize); 
         }
-        $image->save("thumbs/$filename");
+        $image->save("$thumbsdir/$filename");
         echo "thumbnail for file $filename generated<br />";
       }
     }
@@ -145,17 +152,17 @@
   if(!file_exists($itemlistfn)) {
     $itemlist = "";
     $thumblist = "";
-    $files = scandir('photo/');
+    $files = scandir("$photodir");
     $filecnt = 0;
     foreach($files as $file) {
       if($file == '.' || $file == '..') {
         continue;
       }
-      $thumblist .= "<img src='thumbs/$file' onload='$(this).fadeIn()' onclick='openPhotoSwipe($filecnt)' class='thumb' />";
+      $thumblist .= "<img src='$thumbsdir/$file' onload='$(this).fadeIn()' onclick='openPhotoSwipe($filecnt)' class='thumb' />\n";
       $filecnt = $filecnt + 1;
-      list($width, $height) = getimagesize("photo/$file");
-      $itemlist .= "      { src: 'photo/$file', w: $width, h: $height";
-      $exif = exif_read_data("photo/$file", 'IFD0', true);
+      list($width, $height) = getimagesize("$photodir/$file");
+      $itemlist .= "      { src: '$photodir/$file', w: $width, h: $height";
+      $exif = exif_read_data("$photodir/$file", 'IFD0', true);
       $exif_info_string = "";
       $title = pathinfo($file, PATHINFO_FILENAME);
       if($exif !== false && !empty($exif['IFD0']['Make'])) {
@@ -187,10 +194,6 @@
   
   // keep some stats
   if($collect_ipaddr) {
-    $ipaddrfn = 'ipaddr';
-    if($randomize_filenames) {
-      $ipaddrfn = "ipaddr_".sha1("ipaddr".$_SESSION['key']);
-    }
     $ip_addr = $_SERVER['REMOTE_ADDR']." ".date("Y-m-d H:i:s")."\n";
     file_put_contents($ipaddrfn, $ip_addr, FILE_APPEND | LOCK_EX);
   }
@@ -255,7 +258,7 @@
   }
   img {
     margin: 8px;
-    height: 200px;
+<?php echo "    height: ".$thumbsize."px;\n"; ?>
   }
   img:hover {
     cursor: pointer;
@@ -270,9 +273,7 @@
     //<!--
     // build items array
     var items = [
-<?php
-    echo $itemlist;
-?>
+<?php echo $itemlist; ?>
     ];
       
     var openPhotoSwipe = function(idx) {
@@ -301,15 +302,13 @@
   <div class="header">
   <?php echo $infotext; ?><br />
   </div>
-<?php 
-echo $thumblist;
-?>
+<?php echo $thumblist; ?>
   <div class="footer">
     <?php if($download_filename != "") echo '<a href="index.php?q=dl" target="new">Download all photos as zip archive.</a><br />'; ?>
     <br />
     <?php echo $copyright; ?><br />
   </div>
-  <?php echo $visitors; ?>
+  <?php echo $visitors."\n"; ?>
 </center>
 
 <!-- Root element of PhotoSwipe. Must have class pswp. -->
