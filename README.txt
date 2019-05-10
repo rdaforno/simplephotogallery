@@ -9,12 +9,11 @@ Usage:
 Note: You should resize your photos before uploading them to avoid long loading times.
       Recommended photo width: <= 2000px, jpeg compression: 80-90%
 
-Upon the first access to this page, a photo database (text files) and thumbnails will
+Remark: This script uses photoswipe (visit photoswipe.com for more info and updates).
+
+How it works:
+Upon the first access to the index page, a photo database (text file) and thumbnails will
 be generated. To recreate the database, simply delete the files 'itemlist' and 
 'thumblist'. To recreate the thumbnails, delete the folder 'thumbs'.
-This script will also generate several files for simple statistics:
-- 'counter' (visitor count)
-- 'dlcounter' (download counter for the zip file with all photos)
-- 'ipaddr' (IP address and access time log of all visitors, disabled by default)
-
-Remark: This script uses photoswipe (visit photoswipe.com for more info and updates).
+This script will also generate files for simple statistics (visitor and download counter).
+You can enable password protected access to the gallery by setting a password in the config file. Note that the photo folder as well as all generated files will be renamed to make guessing the filenames virtually impossible. However, for the password protection to be effective, directory listings must be disabled on the server and an https connection should be used.
