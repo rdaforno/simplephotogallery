@@ -1,11 +1,11 @@
 <?php  
   // --------------------------------------------------------------------------------------
-  // Simple photo gallery script v1.4
+  // Simple photo gallery script v1.5
   // (c) 2019 Reto Da Forno
   // --------------------------------------------------------------------------------------
 
   // include config
-  require('config.php');  
+  require('config.php');
   
   //error_reporting(E_ALL);
   //ini_set('display_errors', 1);
@@ -51,7 +51,7 @@
   // check if the photo folder exists
   if(!is_dir($photodir)) {
     echo "photo folder not found!";
-    exit();    
+    exit();
   }
   
   // used to create the thumbnails
@@ -158,7 +158,7 @@
       if($file == '.' || $file == '..') {
         continue;
       }
-      $thumblist .= "<img src='$thumbsdir/$file' onload='$(this).fadeIn()' onclick='openPhotoSwipe($filecnt)' class='thumb' />\n";
+      $thumblist .= "<img src='$thumbsdir/$file' onload='$(this).fadeIn(800)' onclick='openPhotoSwipe($filecnt)' class='thumb' \n />";  // don't add newline at the end
       $filecnt = $filecnt + 1;
       list($width, $height) = getimagesize("$photodir/$file");
       $itemlist .= "      { src: '$photodir/$file', w: $width, h: $height";
@@ -185,7 +185,7 @@
       $itemlist .= ", title: '$title $exif_info_string' },\n";
     }
     file_put_contents($itemlistfn, $itemlist);
-    file_put_contents($thumblistfn, $thumblist);    
+    file_put_contents($thumblistfn, $thumblist);
     echo "item list generated!<br />";
     exit;
   }
@@ -234,13 +234,14 @@
     margin-top: 5px;
     margin-bottom: 25px;
     font-size: 24px;
-    color: #ccc;    
+    color: #ccc;
   }
   .header {
     margin-bottom: 30px;
     line-height: 20px;
     font-size: 14px;
     color: #ccc;
+    clear: both;
 <?php if($infotext == "") { echo "    display: none;"; } ?>
   }
   .footer {
@@ -248,6 +249,7 @@
     line-height: 20px;
     font-size: 14px;
     color: #ccc;
+    clear: both;
   }
   a {
     text-decoration: none;
@@ -256,16 +258,30 @@
   a:hover {
     color: #ffffff;
   }
-  img {
-    margin: 8px;
-<?php echo "    height: ".$thumbsize."px;\n"; ?>
-  }
   img:hover {
-    cursor: pointer;
+    cursor: -moz-zoom-in;
+    cursor: -webkit-zoom-in;
+    cursor: zoom-in;
   }
   .thumb {
-    border: 5px #ffffff solid;
+<?php
+  echo "    height: ".$thumbsize."px;\n";
+  if($withspacing) {
+    echo "    margin: 8px;\n    border: 5px #ffffff solid;\n";
+  } else {
+    echo "    margin: 0px;\n";
+  }
+  if($squarethumbs) {
+    echo "    width: ".$thumbsize."px;\n    object-fit: cover;\n";
+  }
+?>
+    padding: 0px;
     display: none;
+  }
+  .thumblist {
+    display: inline-block;
+    clear: both;
+    line-height: 0;
   }
   </style>
   
@@ -277,17 +293,17 @@
     ];
       
     var openPhotoSwipe = function(idx) {
-      var pswpElement = document.querySelectorAll('.pswp')[0];      
+      var pswpElement = document.querySelectorAll('.pswp')[0];
       // define options (if needed)
       var options = {
-        // history & focus options are disabled on CodePen        
+        // history & focus options are disabled on CodePen
         history: false,
         focus: false,
         index: idx,
         showAnimationDuration: 1000,
         hideAnimationDuration: 500,
         showHideOpacity: true
-      };      
+      };
       var gallery = new PhotoSwipe( pswpElement, PhotoSwipeUI_Default, items, options);
       gallery.init();
     };
@@ -302,7 +318,9 @@
   <div class="header">
   <?php echo $infotext; ?><br />
   </div>
+  <div class="thumblist">
 <?php echo $thumblist; ?>
+  </div>
   <div class="footer">
     <?php if($download_filename != "") echo '<a href="index.php?q=dl" target="new">Download all photos as zip archive.</a><br />'; ?>
     <br />
