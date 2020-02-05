@@ -2,8 +2,8 @@
 
 This is a simple script that generates a photo gallery for your website. The script extracts infos from the EXIF data and utilizes photoswipe to display the photos.  
 Only minimal configuration is required, which enables you to set up a new gallery within seconds.  
+Demo: https://keepcoding.ch/demo/simplephotogallery/  
 
-(c) 2019 Reto Da Forno
 
 ## Requirements
 No separate database is required, all you need is a php enabled webhost.
