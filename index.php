@@ -73,6 +73,7 @@
   }
   
   function incrementCounter($dlCounter) {
+    global $counterfn;
     $filecontent = file_get_contents($counterfn);
     $counter = explode(",", $filecontent);
     if(count($counter) == 1) {
